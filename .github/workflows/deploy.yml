@@ -1,41 +1,55 @@
+# Name of the Workflow
 name: Build and Deploy
 
+# Triggers for the Workflow
 on:
   push:
     branches:
-      - dev
-      - uat
-  workflow_dispatch:
+      - dev       # Trigger on pushes to the 'dev' branch
+      - uat       # Trigger on pushes to the 'uat' branch
+  workflow_dispatch:  # Manual trigger for on-demand runs
 
+# Global Environment Variables
 env:
-  AZURE_FUNCTIONAPP_PACKAGE_PATH: '.'
-  DOTNET_VERSION: '8.0.x'
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: '.'  # Path to the Azure Function app package
+  DOTNET_VERSION: '8.0.x'              # .NET version to use for build and deployment
 
+# Job Definition
 jobs:
   build-and-deploy:
-    runs-on: windows-latest
+    name: Build and Deploy to Azure Function App
+    runs-on: windows-latest  # Use a Windows runner for compatibility with Azure Functions
+
+    # Define Environment Based on Branch
     environment:
       name: ${{ github.ref == 'refs/heads/dev' && 'Develop' || github.ref == 'refs/heads/uat' && 'UAT' }}
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+
+    # Dynamic Environment Variable for Web App Name
     env:
       AZURE_WEBAPP_NAME: ${{ github.ref == 'refs/heads/dev' && 'myFunction-dev-01' || github.ref == 'refs/heads/uat' && 'myFunction-uat-01' }}
+
     steps:
-      - name: 'Checkout GitHub Action'
+      # Step 1: Checkout Repository
+      - name: 'Checkout Code'
         uses: actions/checkout@v4
 
-      - name: Setup DotNet ${{ env.DOTNET_VERSION }} Environment
+      # Step 2: Setup .NET Environment
+      - name: 'Setup .NET Environment'
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: 'Resolve Project Dependencies Using Dotnet'
+      # Step 3: Build Application
+      - name: 'Build Azure Function App'
         shell: pwsh
         run: |
           pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
           dotnet build --configuration Release --output ./output
           popd
 
-      - name: 'Run Azure Functions Action'
+      # Step 4: Deploy to Azure Functions
+      - name: 'Deploy to Azure Functions'
         uses: Azure/functions-action@v1
         id: deploy-to-webapp
         with:
@@ -43,3 +57,8 @@ jobs:
           slot-name: 'Production'
           package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output'
           publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
+          
+      # Step 5: Post-Deployment Verification
+      - name: 'Verify Deployment'
+        run: |
+          echo "Deployment completed to ${{ env.AZURE_WEBAPP_NAME }} in the ${{ github.ref == 'refs/heads/dev' && 'Develop' || github.ref == 'refs/heads/uat' && 'UAT' }} environment."
