@@ -1,1 +1,1 @@
-# Function dummy to test Github action pipeline.
+# Azure function to test Github action pipeline.
