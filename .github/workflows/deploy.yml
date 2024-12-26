@@ -25,10 +25,6 @@ jobs:
       name: ${{ github.ref == 'refs/heads/dev' && 'Develop' || github.ref == 'refs/heads/uat' && 'UAT' }}
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
-    # Dynamic Environment Variable for Web App Name
-    env:
-      AZURE_WEBAPP_NAME: ${{ github.ref == 'refs/heads/dev' && 'myFunction-dev-01' || github.ref == 'refs/heads/uat' && 'myFunction-uat-01' }}
-
     steps:
       # Step 1: Checkout Repository
       - name: 'Checkout Code'
@@ -53,7 +49,7 @@ jobs:
         uses: Azure/functions-action@v1
         id: deploy-to-webapp
         with:
-          app-name: '${{ env.AZURE_WEBAPP_NAME }}'
+          app-name: '${{ secrets.AZURE_WEBAPP_NAME }}'  # Use environment secret for app name
           slot-name: 'Production'
           package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output'
           publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
@@ -61,4 +57,4 @@ jobs:
       # Step 5: Post-Deployment Verification
       - name: 'Verify Deployment'
         run: |
-          echo "Deployment completed to ${{ env.AZURE_WEBAPP_NAME }} in the ${{ github.ref == 'refs/heads/dev' && 'Develop' || github.ref == 'refs/heads/uat' && 'UAT' }} environment."
+          echo "Deployment completed to ${{ secrets.AZURE_WEBAPP_NAME }} in the ${{ github.ref == 'refs/heads/dev' && 'Develop' || github.ref == 'refs/heads/uat' && 'UAT' }} environment."
