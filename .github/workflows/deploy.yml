@@ -30,6 +30,13 @@ jobs:
       - name: 'Checkout Code'
         uses: actions/checkout@v4
 
+      - name: 'Azure Auth'
+      - uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
       # Step 2: Setup .NET Environment
       - name: 'Setup .NET Environment'
         uses: actions/setup-dotnet@v1
