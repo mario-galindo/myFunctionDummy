@@ -34,6 +34,7 @@ jobs:
       - name: 'Checkout Code'
         uses: actions/checkout@v4
 
+      # Step 2: Authenticate with Azure
       - name: 'Azure Auth'
         uses: azure/login@v1
         with:
@@ -41,13 +42,13 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      # Step 2: Setup .NET Environment
+      # Step 3: Setup .NET Environment
       - name: 'Setup .NET Environment'
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      # Step 3: Build Application
+      # Step 4: Build Application
       - name: 'Build Azure Function App'
         shell: pwsh
         run: |
@@ -55,7 +56,7 @@ jobs:
           dotnet build --configuration Release --output ./output
           popd
 
-      # Step 4: Deploy to Azure Functions
+      # Step 5: Deploy to Azure Functions
       - name: 'Deploy to Azure Functions'
         uses: Azure/functions-action@v1
         id: deploy-to-webapp
@@ -63,9 +64,13 @@ jobs:
           app-name: '${{ secrets.AZURE_WEBAPP_NAME }}'  # Use environment secret for app name
           slot-name: 'Production'
           package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output'
-          publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
           
-      # Step 5: Post-Deployment Verification
+      # Step 6: Post-Deployment Verification
       - name: 'Verify Deployment'
         run: |
           echo "Deployment completed to ${{ secrets.AZURE_WEBAPP_NAME }} in the ${{ github.ref == 'refs/heads/dev' && 'Develop' || github.ref == 'refs/heads/uat' && 'UAT' }} environment."
+      
+      # Step 7: Logout from Azure
+      - name: logout
+        run: |
+          az logout
