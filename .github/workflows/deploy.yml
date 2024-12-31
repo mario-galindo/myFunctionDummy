@@ -9,6 +9,10 @@ on:
       - uat       # Trigger on pushes to the 'uat' branch
   workflow_dispatch:  # Manual trigger for on-demand runs
 
+permissions:
+      id-token: write
+      contents: read
+
 # Global Environment Variables
 env:
   AZURE_FUNCTIONAPP_PACKAGE_PATH: '.'  # Path to the Azure Function app package
