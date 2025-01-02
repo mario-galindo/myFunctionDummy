@@ -18,7 +18,7 @@ namespace Company.Function
         public IActionResult Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequest req)
         {
             _logger.LogInformation("C# HTTP trigger function processed a request.");
-            return new OkObjectResult("Using app name from secrets");
+            return new OkObjectResult("OpenID Connect, Frohes neus Jahr!");
         }
     }
 }
